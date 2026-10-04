@@ -1,0 +1,9 @@
+.env
+.env.*
+*.key
+*.pem
+*.log
+.ssh/
+runtime/
+node_modules/
+dist/

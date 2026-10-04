@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Cavaliermax Open Uncensored — AI benchmark dashboard" />
+    <title>Cavaliermax Open Uncensored</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      .godmode{border-color:rgba(139,124,255,.32);background:linear-gradient(115deg,rgba(38,32,84,.48),rgba(10,16,28,.92) 55%)}
+      .empty-chart{height:100%;display:grid;place-content:center;text-align:center;gap:7px;border:1px dashed var(--line);border-radius:9px;padding:18px;color:var(--muted);font-size:11px}.empty-chart strong{color:var(--text);font-size:12px}
+      .live-grid{stroke:rgba(173,195,227,.14);stroke-width:1}.live-label{fill:#9da9bd;font-size:9px}.live-axis{fill:#69778d;font-size:8px}.live-bar{fill:rgba(139,124,255,.72)}
+      .chart-card{background:linear-gradient(145deg,rgba(20,31,50,.84),rgba(8,14,25,.92))}.chart-card:hover{border-color:rgba(139,124,255,.3)}
+      .advanced-filters{grid-template-columns:repeat(6,minmax(0,1fr));align-items:end}.advanced-filters .toggle{display:grid}.advanced-filters .toggle input{width:16px;margin:4px 0}.advanced-filters small{color:var(--faint);font-size:9px}.cost-slider input{accent-color:var(--violet)}.pagination{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:14px;color:var(--muted);font-size:11px}.pagination button{border:1px solid var(--line);background:transparent;color:var(--text);border-radius:6px;padding:5px 8px;cursor:pointer}.pagination button:disabled{opacity:.4;cursor:not-allowed}@media(max-width:1080px){.advanced-filters{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:700px){.advanced-filters{grid-template-columns:1fr}}
+    </style>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Salta al contenuto</a>
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">C</span><div><strong>Cavaliermax</strong><small>OPEN UNCENSORED</small></div></div>
+      <div class="topbar-actions">
+        <label class="search"><span aria-hidden="true">⌕</span><input id="searchInput" type="search" placeholder="Cerca modello…" aria-label="Cerca modello" /></label>
+        <button class="icon-button" id="themeButton" type="button" aria-label="Regola contrasto">◐</button>
+        <button class="avatar" type="button" aria-label="Profilo Cavaliermax">CM</button>
+      </div>
+    </header>
+
+    <main id="main" class="page-shell">
+      <section class="title-row" aria-labelledby="pageTitle">
+        <div>
+          <p class="eyebrow">Benchmark workspace <span class="status-dot"></span> dati dimostrativi</p>
+          <h1 id="pageTitle">AI Benchmark Overview</h1>
+          <p class="subtle">Confronto chiaro tra qualità, velocità, costo e capacità operative.</p>
+        </div>
+        <div class="title-meta">
+          <span>Ultimo aggiornamento <strong id="lastUpdated">04 ott 2026, 10:32</strong></span>
+          <button class="button secondary" id="refreshButton" type="button">↻ Aggiorna vista</button>
+        </div>
+      </section>
+
+      <section class="godmode panel" aria-labelledby="godmodeTitle">
+        <div class="godmode-header"><div><p class="eyebrow">OpenRouter workspace</p><h2 id="godmodeTitle">GODMODE compare</h2><p class="subtle">Carica il catalogo live, fissa fino a quattro modelli e invia il prompt. La chiave resta solo in memoria nel browser.</p></div><span class="security-badge">● chiave non salvata</span></div>
+        <div class="godmode-controls"><label class="api-key">OpenRouter API key<input id="apiKey" type="password" autocomplete="off" placeholder="sk-or-v1-…" /></label><label class="prompt">Prompt<textarea id="promptInput" placeholder="Scrivi una richiesta da confrontare…"></textarea></label><div class="godmode-actions"><button class="button secondary" id="loadModels" type="button">Carica modelli</button><button class="button primary" id="runPrompt" type="button">Esegui confronto <span>→</span></button></div></div>
+        <div id="results" class="results" aria-live="polite"><p id="catalogStatus">Catalogo non ancora caricato. Premi “Carica modelli” per usare esclusivamente modelli disponibili su OpenRouter.</p></div>
+      </section>
+
+      <section class="filters panel advanced-filters" aria-label="Filtri catalogo OpenRouter">
+        <label>Casa madre<select id="providerFilter"><option value="all">Tutte le organizzazioni</option></select></label>
+        <label>Famiglia<select id="familyFilter"><option value="all">Tutte le famiglie</option></select></label>
+        <label>Grandezza dichiarata<select id="sizeFilter"><option value="all">Qualsiasi / non dichiarata</option><option value="known">Solo dichiarata</option><option value="small">Sotto 10B</option><option value="medium">10B–69B</option><option value="large">70B+</option></select></label>
+        <label>Capacità<select id="capabilityFilter"><option value="all">Tutte le capacità</option></select></label>
+        <label>Prezzo<select id="priceTypeFilter"><option value="all">Gratis e a pagamento</option><option value="free">Solo gratis</option><option value="paid">Solo a pagamento</option></select></label>
+        <label>Novità<select id="newnessFilter"><option value="all">Qualsiasi data</option><option value="30">Ultimi 30 giorni</option><option value="90">Ultimi 90 giorni</option><option value="365">Ultimo anno</option></select></label>
+        <label>Context minimo<select id="contextFilter"><option value="0">Qualsiasi</option><option value="8000">8k+</option><option value="32000">32k+</option><option value="128000">128k+</option><option value="1000000">1M+</option></select></label>
+        <label>Max output<select id="outputFilter"><option value="0">Qualsiasi</option><option value="1024">1k+</option><option value="4096">4k+</option><option value="16000">16k+</option></select></label>
+        <label>Disponibilità<select id="availabilityFilter"><option value="all">Tutti i modelli</option><option value="pinned">Solo fissati</option><option value="unfixed">Non fissati</option></select></label>
+        <label>Latenza sessione<select id="latencyFilter"><option value="all">Qualsiasi / N.D.</option><option value="fast">Sotto 1 secondo</option><option value="medium">Sotto 3 secondi</option><option value="measured">Solo misurati</option></select></label>
+        <label>Rapporto costo/prestazioni<select disabled title="Richiede benchmark misurati"><option>N/D — benchmark richiesti</option></select></label>
+        <label class="cost-slider">Costo max input/output <input id="costFilter" type="range" min="0" max="100" value="100" /><small id="costFilterValue">Carica catalogo</small></label>
+        <label class="toggle">Modelli “uncensored” <input id="uncensoredFilter" type="checkbox" /><small>euristica, non garanzia</small></label>
+        <label>Risultati per pagina<select id="pageSize"><option value="15">15</option><option value="25" selected>25</option><option value="50">50</option></select></label>
+        <button class="button tertiary" id="clearFilters" type="button">Reimposta</button>
+      </section>
+
+      <section class="stat-grid" aria-label="Riepilogo">
+        <article class="stat panel"><span>Modelli catalogo</span><strong id="modelCount">00</strong><small id="modelMeta">in attesa di caricamento</small></article>
+        <article class="stat panel"><span>Chiamate sessione</span><strong id="callCount">00</strong><small id="callMeta">nessuna richiesta eseguita</small></article>
+        <article class="stat panel"><span>Latenza mediana</span><strong id="latencyValue">N/D</strong><small id="latencyMeta">dati dopo la prima chiamata</small></article>
+        <article class="stat panel"><span>Costo risposte</span><strong id="costValue">N/D</strong><small id="costMeta">solo se restituito da OpenRouter</small></article>
+      </section>
+
+      <section class="leaderboard panel" aria-labelledby="leaderboardTitle">
+        <div class="section-heading"><div><p class="eyebrow">Panoramica</p><h2 id="leaderboardTitle">Leader del benchmark</h2></div><p class="legend"><i class="legend-violet"></i> punteggio composito normalizzato</p></div>
+        <div class="podium" id="podium"></div>
+      </section>
+
+      <section class="workspace-grid">
+        <section class="benchmark panel" aria-labelledby="tableTitle">
+          <div class="section-heading table-heading"><div><p class="eyebrow">Confronto</p><h2 id="tableTitle">Matrice di performance</h2></div><p id="selectionStatus" class="selection-status">0/4 fissati nel confronto</p></div>
+          <div class="table-scroll"><table id="benchmarkTable"><thead></thead><tbody></tbody></table></div>
+          <p class="table-note">Catalogo, contesto e prezzi provengono da OpenRouter. Le metriche benchmark restano N/D finché non vengono misurate; fissa fino a quattro modelli per il confronto.</p>
+          <nav id="pagination" class="pagination" aria-label="Paginazione catalogo"></nav>
+        </section>
+        <aside class="insights panel" aria-labelledby="insightsTitle">
+          <div class="section-heading"><div><p class="eyebrow">Sintesi</p><h2 id="insightsTitle">Insight prioritari</h2></div><span class="pill">Auto</span></div>
+          <div id="insightList" class="insight-list"></div>
+          <button class="text-button" type="button" id="explainButton">Come sono calcolati i punteggi →</button>
+        </aside>
+      </section>
+
+      <section class="charts-grid" aria-label="Analisi visuale">
+        <article class="chart-card panel"><div class="section-heading"><div><p class="eyebrow">Profilo live</p><h2>Contesto e prezzi</h2></div><span class="chart-caption">fino a 4 modelli</span></div><div id="radarChart" class="chart-area" aria-label="Profilo catalogo"></div></article>
+        <article class="chart-card panel"><div class="section-heading"><div><p class="eyebrow">Catalogo live</p><h2>Contesto vs costo output</h2></div><span class="chart-caption">alto/sinistra = più efficiente</span></div><div id="scatterChart" class="chart-area" aria-label="Contesto rispetto al costo"></div></article>
+        <article class="chart-card panel"><div class="section-heading"><div><p class="eyebrow">Confronto live</p><h2>Costo output fissati</h2></div><span class="chart-caption">$/milione token</span></div><div id="lineChart" class="chart-area" aria-label="Costi output"></div></article>
+      </section>
+
+    </main>
+
+    <dialog id="methodDialog"><article><button class="dialog-close" aria-label="Chiudi">×</button><p class="eyebrow">Metodologia</p><h2>Come leggere questa vista</h2><p>I punteggi iniziali sono dati fittizi, utili solo a dimostrare l’interfaccia. La fase successiva potrà sostituirli con benchmark ripetibili, normalizzati per versione del modello, data e costo.</p><ul><li>Il punteggio complessivo è una media ponderata configurabile.</li><li>Il costo viene invertito: più basso è migliore.</li><li>Le differenze non devono essere interpretate come valutazioni assolute.</li></ul></article></dialog>
+    <script src="app.js"></script>
+  </body>
+</html>
