@@ -1,6 +1,6 @@
 # Cavaliermax Open Uncensored
 
-![Cavaliermax Command Deck concept preview](assets/command-deck-cover.png)
+![Cavaliermax Command Deck — dashboard reale](assets/command-deck-real-dashboard.png)
 
 Dashboard statica per confrontare modelli AI con OpenRouter. La UI **Command Deck** è un design originale Cavaliermax: console editoriale-operativa, non derivata da layout, asset o codice di altri progetti.
 
@@ -8,7 +8,7 @@ Dashboard statica per confrontare modelli AI con OpenRouter. La UI **Command Dec
 
 #OpenRouter #LLM #AIComparison #ModelBenchmark #AIDashboard #GenerativeAI #AIResearch #AITools
 
-> L'immagine sopra è una visualizzazione promozionale del Command Deck: i dati operativi della dashboard provengono esclusivamente dal catalogo live OpenRouter e dalle chiamate effettuate dall'utente.
+> L'immagine sopra è uno screenshot della dashboard reale in stato iniziale: non contiene modelli, benchmark o metriche inventate. Catalogo, prezzi e dati di sessione vengono popolati esclusivamente da OpenRouter e dalle chiamate effettuate dall'utente.
 
 ## Stato del prototipo
 
