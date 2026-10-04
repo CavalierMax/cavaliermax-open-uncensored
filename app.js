@@ -1,6 +1,7 @@
 "use strict";
 
 const API = "https://openrouter.ai/api/v1";
+const KEY_STORAGE = "cavaliermax-openrouter-api-key-v1";
 const labels = { accuracy:"Accuratezza", speed:"Velocità", reliability:"Affidabilità", reasoning:"Ragionamento", code:"Codice", creative:"Creatività", overall:"Totale" };
 const benchmarkKeys = ["accuracy", "speed", "reliability", "reasoning", "code", "creative", "overall"];
 let models = [];
@@ -18,6 +19,29 @@ const esc = (value) => String(value ?? "").replace(/[&<>'"]/g, char => ({"&":"&a
 const numeric = (value) => Number.isFinite(Number(value)) ? Number(value) : null;
 const pricePerMillion = (value) => { const n = numeric(value); return n === null ? null : n * 1_000_000; };
 const priceText = (value) => value === null ? "—" : `$${value < .01 ? value.toFixed(4) : value.toFixed(2)}`;
+
+function browserStorage() { return typeof localStorage === "undefined" ? null : localStorage; }
+function updateKeyPersistence() {
+  let saved = false;
+  try { saved = Boolean(browserStorage()?.getItem(KEY_STORAGE)); } catch (_) { /* storage disabilitato */ }
+  $("#keyPersistenceBadge").textContent = saved ? "● chiave salvata nel browser" : "● chiave non salvata";
+}
+function restoreSavedKey() {
+  try {
+    const saved = browserStorage()?.getItem(KEY_STORAGE);
+    if (saved) { $("#apiKey").value = saved; $("#rememberKey").checked = true; }
+  } catch (_) { /* Browser storage non disponibile: la chiave resta solo in memoria. */ }
+  updateKeyPersistence();
+}
+function saveOrForgetKey() {
+  try {
+    const storage = browserStorage();
+    if (!storage) throw new Error("storage non disponibile");
+    if ($("#rememberKey").checked && $("#apiKey").value.trim()) storage.setItem(KEY_STORAGE, $("#apiKey").value.trim());
+    else storage.removeItem(KEY_STORAGE);
+  } catch (_) { alert("Il browser non consente di salvare la chiave in questo profilo."); }
+  updateKeyPersistence();
+}
 
 function normalize(raw) {
   const pricing = raw.pricing || {};
@@ -122,5 +146,8 @@ function attach() {
   $("#promptInput").addEventListener("input",renderCostFilter);
   $("#clearFilters").addEventListener("click",()=>{filters.filter(id=>id!=="pageSize").forEach(id=>{const element=$("#"+id);if(element.type==="checkbox")element.checked=false;else element.value="all";});$("#contextFilter").value="0";$("#outputFilter").value="0";$("#costFilter").value=100;page=1;renderCostFilter();renderAll();});
   $("#refreshButton").addEventListener("click",()=>{stamp();renderAll();}); $("#themeButton").addEventListener("click",()=>document.body.classList.toggle("high-contrast")); $("#loadModels").addEventListener("click",loadModels); $("#runPrompt").addEventListener("click",runPrompt); $("#explainButton").addEventListener("click",()=>$("#methodDialog").showModal()); $(".dialog-close").addEventListener("click",()=>$("#methodDialog").close());
+  $("#rememberKey").addEventListener("change",saveOrForgetKey);
+  $("#apiKey").addEventListener("change",()=>{ if ($("#rememberKey").checked) saveOrForgetKey(); });
+  $("#forgetKey").addEventListener("click",()=>{ $("#rememberKey").checked=false; $("#apiKey").value=""; saveOrForgetKey(); });
 }
-attach(); stamp(); renderAll();
+attach(); restoreSavedKey(); stamp(); renderAll();
