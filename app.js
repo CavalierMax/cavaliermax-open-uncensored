@@ -130,6 +130,18 @@ async function loadModels() {
   } catch (error) { status.textContent = `Impossibile caricare il catalogo: ${error.message}`; }
   finally { button.disabled = false; }
 }
+async function copyResponse(text, button) {
+  const original = button.textContent;
+  try {
+    if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) await navigator.clipboard.writeText(text);
+    else {
+      const field=document.createElement("textarea"); field.value=text; field.setAttribute("readonly",""); field.style.position="fixed"; field.style.opacity="0";
+      document.body.append(field); field.select(); const copied=document.execCommand("copy"); field.remove(); if(!copied) throw new Error("copy unavailable");
+    }
+    button.textContent="Copiata ✓";
+  } catch (_) { button.textContent="Copia non riuscita"; }
+  setTimeout(()=>{button.textContent=original;},1800);
+}
 async function runPrompt() {
   const key = $("#apiKey").value.trim(), prompt = $("#promptInput").value.trim(), chosen = models.filter(model => selected.includes(model.id)), box = $("#results");
   if (!key || !prompt || !chosen.length) { box.innerHTML = "<p>Inserisci chiave e prompt, quindi fissa almeno un modello del catalogo OpenRouter.</p>"; return; }
@@ -139,7 +151,8 @@ async function runPrompt() {
   const messages = directives[mode] ? [{role:"system",content:directives[mode]},{role:"user",content:prompt}] : [{role:"user",content:prompt}];
   const answers = await Promise.all(chosen.map(async model => { const started=performance.now(); try { const response = await fetch(`${API}/chat/completions`, {method:"POST",headers:{Authorization:`Bearer ${key}`,"Content-Type":"application/json","X-Title":"Cavaliermax Open Uncensored"},body:JSON.stringify({model:model.id,messages,temperature:.7,max_tokens:1800})}); const data = await response.json(); if (!response.ok) throw new Error(data?.error?.message || `HTTP ${response.status}`); return {model,text:data.choices?.[0]?.message?.content || "Risposta vuota",ok:true,time:(performance.now()-started)/1000,cost:numeric(data.usage?.cost ?? data.usage?.total_cost)}; } catch(error) { return {model,text:error.message,ok:false}; }}));
   const successes=answers.filter(answer=>answer.ok); sessionCalls+=successes.length; sessionLatencies.push(...successes.map(answer=>answer.time)); successes.forEach(answer=>sessionLatencyByModel.set(answer.model.id,answer.time)); const reported=successes.map(answer=>answer.cost).filter(cost=>cost!==null); if(reported.length) sessionCost=(sessionCost||0)+reported.reduce((total,cost)=>total+cost,0); renderAll();
-  box.innerHTML = `<div class="result-grid">${answers.map(answer=>`<article class="result"><h3>${esc(answer.model.name)}${answer.ok?"":" · errore"}</h3><p>${esc(answer.text)}</p></article>`).join("")}</div>`;
+  box.innerHTML = `<div class="result-grid">${answers.map((answer,index)=>`<article class="result"><div class="result-head"><h3>${esc(answer.model.name)}${answer.ok?"":" · errore"}</h3>${answer.ok?`<button class="copy-response" type="button" data-copy-response="${index}" aria-label="Copia la risposta di ${esc(answer.model.name)}">Copia risposta</button>`:""}</div><p>${esc(answer.text)}</p></article>`).join("")}</div>`;
+  document.querySelectorAll("[data-copy-response]").forEach(button=>button.addEventListener("click",()=>copyResponse(answers[Number(button.dataset.copyResponse)].text,button)));
 }
 function attach() {
   const filters=["searchInput","providerFilter","familyFilter","sizeFilter","capabilityFilter","priceTypeFilter","newnessFilter","contextFilter","outputFilter","availabilityFilter","latencyFilter","uncensoredFilter","pageSize"];
