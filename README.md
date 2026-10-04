@@ -1,6 +1,6 @@
 # Cavaliermax Open Uncensored
 
-Dashboard statica per confrontare modelli AI con OpenRouter, progettata come interfaccia B2B premium e accessibile.
+Dashboard statica per confrontare modelli AI con OpenRouter. La UI **Command Deck** è un design originale Cavaliermax: console editoriale-operativa, non derivata da layout, asset o codice di altri progetti.
 
 ## Stato del prototipo
 
@@ -14,7 +14,7 @@ Il catalogo offre filtri per provider, famiglia, capacità dichiarate, gratuità
 2. Avvia `start-windows.bat`.
 3. Apri `http://127.0.0.1:8765/` se il browser non si avvia automaticamente.
 
-La chiave OpenRouter non viene salvata dall'applicazione e non deve essere inserita in file versionati.
+La chiave OpenRouter non viene inserita in file versionati. Se selezioni “Ricorda su questo browser”, viene conservata esclusivamente nel `localStorage` del profilo browser e separatamente per ogni URL/origine; usa questa opzione solo su un dispositivo personale.
 
 Per aprire la dashboard ospitata sul server AI dal PC Windows, avvia `Open-GodModeOpenrouter.bat`. Usa una finestra Firefox isolata; chiudendo quella finestra si chiude anche il terminale del launcher.
 
@@ -37,4 +37,4 @@ Il launcher predefinito espone solo `http://192.168.1.144:8786/`, salva PID e lo
 
 ## Licenza
 
-Da definire prima della pubblicazione GitHub. Questo progetto è implementato da zero e non include codice del repository upstream citato nella fase di valutazione.
+Da definire prima della pubblicazione GitHub. Questo progetto è implementato da zero e non include codice, asset, testi o struttura UI del repository di riferimento valutato in fase di analisi.

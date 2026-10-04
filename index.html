@@ -6,6 +6,7 @@
     <meta name="description" content="Cavaliermax Open Uncensored — AI benchmark dashboard" />
     <title>Cavaliermax Open Uncensored</title>
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="command-deck.css" />
     <style>
       .godmode{border-color:rgba(139,124,255,.32);background:linear-gradient(115deg,rgba(38,32,84,.48),rgba(10,16,28,.92) 55%)}
       .empty-chart{height:100%;display:grid;place-content:center;text-align:center;gap:7px;border:1px dashed var(--line);border-radius:9px;padding:18px;color:var(--muted);font-size:11px}.empty-chart strong{color:var(--text);font-size:12px}
@@ -17,7 +18,7 @@
   <body>
     <a class="skip-link" href="#main">Salta al contenuto</a>
     <header class="topbar">
-      <div class="brand"><span class="brand-mark">C</span><div><strong>Cavaliermax</strong><small>OPEN UNCENSORED</small></div></div>
+      <div class="brand"><span class="brand-mark">CM</span><div><strong>Cavaliermax / Lab</strong><small>OPENROUTER COMMAND DECK</small></div></div>
       <div class="topbar-actions">
         <label class="search"><span aria-hidden="true">⌕</span><input id="searchInput" type="search" placeholder="Cerca modello…" aria-label="Cerca modello" /></label>
         <button class="icon-button" id="themeButton" type="button" aria-label="Regola contrasto">◐</button>
@@ -28,9 +29,9 @@
     <main id="main" class="page-shell">
       <section class="title-row" aria-labelledby="pageTitle">
         <div>
-          <p class="eyebrow">Benchmark workspace <span class="status-dot"></span> dati dimostrativi</p>
-          <h1 id="pageTitle">AI Benchmark Overview</h1>
-          <p class="subtle">Confronto chiaro tra qualità, velocità, costo e capacità operative.</p>
+          <p class="eyebrow">Inference observatory <span class="status-dot"></span> OpenRouter live</p>
+          <h1 id="pageTitle">Cavaliermax Command Deck</h1>
+          <p class="subtle">Una console di ricerca per interrogare, confrontare e governare modelli AI in tempo reale.</p>
         </div>
         <div class="title-meta">
           <span>Ultimo aggiornamento <strong id="lastUpdated">04 ott 2026, 10:32</strong></span>
@@ -38,9 +39,11 @@
         </div>
       </section>
 
+      <section class="signal-rail" aria-label="Stato del sistema"><span><i></i> LINK OPENROUTER</span><span>SELEZIONE <b id="railSelection">0</b>/4</span><span>PROFILO <b>PERSONAL</b></span><span>NO TELEMETRIA APPLICATIVA</span></section>
+
       <section class="godmode panel" aria-labelledby="godmodeTitle">
-        <div class="godmode-header"><div><p class="eyebrow">OpenRouter workspace</p><h2 id="godmodeTitle">GODMODE compare</h2><p class="subtle">Carica il catalogo live, fissa fino a quattro modelli e invia il prompt. Puoi ricordare la chiave solo nel profilo di questo browser.</p></div><span id="keyPersistenceBadge" class="security-badge">● chiave non salvata</span></div>
-        <div class="godmode-controls"><label class="api-key">OpenRouter API key<input id="apiKey" type="password" autocomplete="off" placeholder="sk-or-v1-…" /><span class="key-tools"><label><input id="rememberKey" type="checkbox" /> Ricorda su questo browser</label><button id="forgetKey" type="button">Rimuovi chiave salvata</button></span></label><label class="prompt">Prompt<textarea id="promptInput" placeholder="Scrivi una richiesta da confrontare…"></textarea></label><div class="godmode-actions"><button class="button secondary" id="loadModels" type="button">Carica modelli</button><button class="button primary" id="runPrompt" type="button">Esegui confronto <span>→</span></button></div></div>
+        <div class="godmode-header"><div><p class="eyebrow">Inference control room</p><h2 id="godmodeTitle">Direct inference bay</h2><p class="subtle">Carica il catalogo live, fissa fino a quattro modelli e lancia una richiesta parallela. La chiave può restare esclusivamente nel tuo browser.</p></div><span id="keyPersistenceBadge" class="security-badge">● chiave non salvata</span></div>
+        <div class="godmode-controls"><label class="api-key">OpenRouter API key<input id="apiKey" type="password" autocomplete="off" placeholder="sk-or-v1-…" /><span class="key-tools"><label><input id="rememberKey" type="checkbox" /> Ricorda su questo browser</label><button id="forgetKey" type="button">Rimuovi chiave salvata</button></span></label><label class="prompt">Mission prompt<textarea id="promptInput" placeholder="Scrivi la richiesta da inviare ai modelli fissati…"></textarea></label><label class="run-mode">Protocollo<select id="modeSelect"><option value="godmode" selected>GODMODE · diretto</option><option value="focused">FOCUS · analitico</option><option value="raw">RAW · senza direttiva</option></select></label><div class="godmode-actions"><button class="button secondary" id="loadModels" type="button">Sincronizza catalogo</button><button class="button primary" id="runPrompt" type="button">Lancia missione <span>→</span></button></div></div>
         <div id="results" class="results" aria-live="polite"><p id="catalogStatus">Catalogo non ancora caricato. Premi “Carica modelli” per usare esclusivamente modelli disponibili su OpenRouter.</p></div>
       </section>
 
