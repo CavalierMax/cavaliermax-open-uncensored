@@ -16,6 +16,10 @@ I modelli vengono caricati dal catalogo live di OpenRouter: nome, provider, cont
 
 Il catalogo offre filtri per provider, famiglia, capacità dichiarate, gratuità, novità, context window, max output, fissati, latenza di sessione e modelli probabilmente uncensored. Il filtro uncensored è euristico e non è una garanzia. Prezzi, context e data provengono dall'API; rapporto costo/prestazioni resta disabilitato finché non esistono benchmark misurati. I risultati sono paginati a 15, 25 o 50 modelli per pagina.
 
+## Modifica immagini con Venice
+
+La sezione **Modifica un JPG con AI** invia JPG, PNG o WebP (massimo 25 MB) direttamente all'endpoint di image editing di Venice e permette di scaricare il PNG risultante. Richiede una **Venice API key** distinta: la chiave OpenRouter serve al catalogo e ai modelli testuali, non a Venice Image Edit. La chiave e il file non transitano nel server della dashboard; se si attiva “Ricorda”, la chiave viene salvata solo nel `localStorage` del profilo browser. Il modulo usa modelli dichiarati da Venice, incluso Qwen Edit Uncensored; disponibilità e output dipendono dal tuo account Venice. Vedi la [documentazione Venice Image Edit](https://docs.venice.ai/api-reference/endpoint/image/edit).
+
 ## Avvio locale su Windows
 
 1. Installa Python 3 se non è già presente.

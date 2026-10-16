@@ -2,6 +2,9 @@
 
 const API = "https://openrouter.ai/api/v1";
 const KEY_STORAGE = "cavaliermax-openrouter-api-key-v1";
+const VENICE_IMAGE_API = "https://api.venice.ai/api/v1/image/edit";
+const VENICE_KEY_STORAGE = "cavaliermax-venice-image-key-v1";
+let sourceImageData = null, previewUrl = null, editedImageUrl = null;
 const labels = { accuracy:"Accuratezza", speed:"Velocità", reliability:"Affidabilità", reasoning:"Ragionamento", code:"Codice", creative:"Creatività", overall:"Totale" };
 const benchmarkKeys = ["accuracy", "speed", "reliability", "reasoning", "code", "creative", "overall"];
 let models = [];
@@ -41,6 +44,46 @@ function saveOrForgetKey() {
     else storage.removeItem(KEY_STORAGE);
   } catch (_) { alert("Il browser non consente di salvare la chiave in questo profilo."); }
   updateKeyPersistence();
+}
+function updateVeniceKeyPersistence() {
+  let saved = false;
+  try { saved = Boolean(browserStorage()?.getItem(VENICE_KEY_STORAGE)); } catch (_) { /* storage disabilitato */ }
+  $("#rememberVeniceKey").checked = saved;
+}
+function restoreVeniceKey() {
+  try { const saved=browserStorage()?.getItem(VENICE_KEY_STORAGE); if(saved) $("#veniceApiKey").value=saved; } catch (_) { /* storage disabilitato */ }
+  updateVeniceKeyPersistence();
+}
+function saveOrForgetVeniceKey() {
+  try {
+    const storage=browserStorage(); if(!storage) throw new Error("storage non disponibile");
+    if($("#rememberVeniceKey").checked && $("#veniceApiKey").value.trim()) storage.setItem(VENICE_KEY_STORAGE,$("#veniceApiKey").value.trim()); else storage.removeItem(VENICE_KEY_STORAGE);
+  } catch (_) { $("#imageStatus").textContent="Il browser non consente di salvare la chiave Venice in questo profilo."; }
+  updateVeniceKeyPersistence();
+}
+function readImageFile(file) {
+  return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onerror=()=>reject(new Error("Lettura del file non riuscita."));reader.onload=()=>resolve(String(reader.result));reader.readAsDataURL(file);});
+}
+async function previewSourceImage() {
+  const file=$("#imageInput").files?.[0], status=$("#imageStatus");
+  if(!file) return;
+  if(!["image/jpeg","image/png","image/webp"].includes(file.type)){status.textContent="Usa un file JPG, PNG o WebP.";return;}
+  if(file.size>25*1024*1024){status.textContent="Il file supera il limite di 25 MB di Venice.";return;}
+  sourceImageData=await readImageFile(file); if(previewUrl) URL.revokeObjectURL(previewUrl); previewUrl=sourceImageData;
+  $("#imagePreview").src=previewUrl; $("#imagePreview").hidden=false; $("#imagePreviewEmpty").hidden=true; status.textContent=`Pronto: ${file.name}. Scrivi l’istruzione di modifica.`;
+}
+async function editImage() {
+  const key=$("#veniceApiKey").value.trim(), prompt=$("#imagePrompt").value.trim(), status=$("#imageStatus"), button=$("#editImage");
+  if(!key || !sourceImageData || !prompt){status.textContent="Inserisci chiave Venice, immagine e istruzione di modifica.";return;}
+  button.disabled=true; status.textContent="Venice sta modificando l’immagine…";
+  try {
+    const image=sourceImageData.split(",",2)[1];
+    const response=await fetch(VENICE_IMAGE_API,{method:"POST",headers:{Authorization:`Bearer ${key}`,"Content-Type":"application/json"},body:JSON.stringify({model:$("#imageModel").value,image,prompt,resolution:"1K",output_format:"png"})});
+    if(!response.ok){let message=`HTTP ${response.status}`;try{const body=await response.json();message=body.error||body.message||message;}catch(_){}throw new Error(message);}
+    const blob=await response.blob(); if(!blob.type.startsWith("image/")) throw new Error("Venice non ha restituito un file immagine.");
+    if(editedImageUrl) URL.revokeObjectURL(editedImageUrl); editedImageUrl=URL.createObjectURL(blob); $("#editedImage").src=editedImageUrl; $("#editedImage").hidden=false; $("#editedImageEmpty").hidden=true; const download=$("#downloadEditedImage"); download.href=editedImageUrl; download.hidden=false; status.textContent="Modifica completata. Puoi scaricare il PNG risultante.";
+  } catch(error) { status.textContent=`Modifica non riuscita: ${error.message}`; }
+  finally { button.disabled=false; }
 }
 
 function normalize(raw) {
@@ -166,5 +209,10 @@ function attach() {
   $("#rememberKey").addEventListener("change",saveOrForgetKey);
   $("#apiKey").addEventListener("change",()=>{ if ($("#rememberKey").checked) saveOrForgetKey(); });
   $("#forgetKey").addEventListener("click",()=>{ $("#rememberKey").checked=false; $("#apiKey").value=""; saveOrForgetKey(); });
+  $("#imageInput").addEventListener("change",()=>previewSourceImage().catch(error=>$("#imageStatus").textContent=error.message));
+  $("#editImage").addEventListener("click",editImage);
+  $("#rememberVeniceKey").addEventListener("change",saveOrForgetVeniceKey);
+  $("#veniceApiKey").addEventListener("change",()=>{if($("#rememberVeniceKey").checked)saveOrForgetVeniceKey();});
+  $("#forgetVeniceKey").addEventListener("click",()=>{$("#rememberVeniceKey").checked=false;$("#veniceApiKey").value="";saveOrForgetVeniceKey();});
 }
-attach(); restoreSavedKey(); stamp(); renderAll();
+attach(); restoreSavedKey(); restoreVeniceKey(); stamp(); renderAll();
