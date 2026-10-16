@@ -3,6 +3,9 @@
 *.key
 *.pem
 *.log
+.server.pid
+.updater.pid
+.auto-update.env
 .ssh/
 runtime/
 node_modules/

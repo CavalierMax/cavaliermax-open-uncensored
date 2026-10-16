@@ -41,6 +41,12 @@ chmod 750 start-linux.sh stop-linux.sh
 
 Il launcher predefinito espone solo `http://192.168.1.144:8786/`, salva PID e log nella stessa directory dell'app e non richiede privilegi sudo. Per arrestare il processo: `./stop-linux.sh`.
 
+### Aggiornamenti dal server
+
+`update-from-github.sh` scarica una revisione completa e immutabile da GitHub in una directory temporanea interna al progetto, controlla gli script e `app.js`, poi sostituisce solo i file runtime e riavvia la dashboard se era attiva. Non richiede chiavi SSH Windows.
+
+Per abilitare il controllo automatico, crea nella directory dell'app il file `.auto-update.env` con `AUTO_UPDATE=1`, un intervallo in secondi (`UPDATE_INTERVAL=900` per 15 minuti) e il canale (`UPDATE_REF=main`). Al successivo `./start-linux.sh`, il loop esegue il controllo in uscita verso GitHub e registra gli esiti in `updater.log`. Per un rilascio controllato, imposta `UPDATE_REF` a un tag Git invece di `main`.
+
 ## Sicurezza
 
 - Usa una API key dedicata, con limite di spesa.
