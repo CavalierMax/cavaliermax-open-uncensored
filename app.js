@@ -57,11 +57,11 @@ function filtered() {
   const query = $("#searchInput").value.trim().toLowerCase();
   const provider = $("#providerFilter").value, family=$("#familyFilter").value, size=$("#sizeFilter").value, capability=$("#capabilityFilter").value;
   const priceType=$("#priceTypeFilter").value, newness=Number($("#newnessFilter").value), minContext=Number($("#contextFilter").value), minOutput=Number($("#outputFilter").value), availability=$("#availabilityFilter").value, latency=$("#latencyFilter").value, uncensored=$("#uncensoredFilter").checked;
-  const maxRate=Math.max(...models.map(model=>Math.max(model.input||0,model.output||0)),0), ceiling=maxRate*(Number($("#costFilter").value)/100), now=Date.now()/1000;
+  const semanticUncensored=/^(uncensored|unfiltered|abliterated|de.?aligned)$/.test(query), maxRate=Math.max(...models.map(model=>Math.max(model.input||0,model.output||0)),0), ceiling=maxRate*(Number($("#costFilter").value)/100), now=Date.now()/1000;
   return models.filter(model => {
     const rate=Math.max(model.input||0,model.output||0), measured=sessionLatencyByModel.get(model.id);
     const sizeMatches=size === "all" || (size === "known" && model.parameterBillions !== null) || (size === "small" && model.parameterBillions !== null && model.parameterBillions<10) || (size === "medium" && model.parameterBillions !== null && model.parameterBillions>=10 && model.parameterBillions<70) || (size === "large" && model.parameterBillions !== null && model.parameterBillions>=70);
-    return (!query || `${model.name} ${model.provider} ${model.id} ${model.description}`.toLowerCase().includes(query)) && (provider === "all" || model.provider === provider) && (family === "all" || model.family === family) && sizeMatches && (capability === "all" || model.capabilities.includes(capability)) && (priceType === "all" || (priceType === "free" && model.free) || (priceType === "paid" && !model.free)) && (!newness || (model.created && now-model.created <= newness*86400)) && (model.context||0)>=minContext && (model.maxOutput||0)>=minOutput && (availability === "all" || (availability === "pinned" && selected.includes(model.id)) || (availability === "unfixed" && !selected.includes(model.id))) && (!uncensored || model.uncensored) && (rate<=ceiling || !maxRate) && (latency === "all" || (latency === "measured" && measured !== undefined) || (latency === "fast" && measured !== undefined && measured<1) || (latency === "medium" && measured !== undefined && measured<3));
+    return (!query || semanticUncensored || `${model.name} ${model.provider} ${model.id} ${model.description}`.toLowerCase().includes(query)) && (provider === "all" || model.provider === provider) && (family === "all" || model.family === family) && sizeMatches && (capability === "all" || model.capabilities.includes(capability)) && (priceType === "all" || (priceType === "free" && model.free) || (priceType === "paid" && !model.free)) && (!newness || (model.created && now-model.created <= newness*86400)) && (model.context||0)>=minContext && (model.maxOutput||0)>=minOutput && (availability === "all" || (availability === "pinned" && selected.includes(model.id)) || (availability === "unfixed" && !selected.includes(model.id))) && (!(uncensored || semanticUncensored) || model.uncensored) && (rate<=ceiling || !maxRate) && (latency === "all" || (latency === "measured" && measured !== undefined) || (latency === "fast" && measured !== undefined && measured<1) || (latency === "medium" && measured !== undefined && measured<3));
   }).sort((a,b) => {
     const field = sortKey === "name" ? "name" : sortKey === "context" ? "context" : sortKey === "input" ? "input" : "output";
     return sortDirection * String(a[field] ?? "").localeCompare(String(b[field] ?? ""), undefined, {numeric:true});
@@ -126,7 +126,8 @@ async function loadModels() {
     models = (payload.data || []).filter(model => model?.id).map(normalize).sort((a,b) => a.name.localeCompare(b.name));
     selected = selected.filter(id => models.some(model => model.id === id));
     renderProviders(); stamp(); renderAll();
-    status.textContent = `${models.length} modelli caricati dal catalogo OpenRouter. I benchmark restano non misurati.`;
+    const uncensoredCandidates=models.filter(model=>model.uncensored).length;
+    status.textContent = `${models.length} modelli caricati dal catalogo OpenRouter. ${uncensoredCandidates} candidati “uncensored” euristici disponibili. I benchmark restano non misurati.`;
   } catch (error) { status.textContent = `Impossibile caricare il catalogo: ${error.message}`; }
   finally { button.disabled = false; }
 }
@@ -158,6 +159,7 @@ function attach() {
   const filters=["searchInput","providerFilter","familyFilter","sizeFilter","capabilityFilter","priceTypeFilter","newnessFilter","contextFilter","outputFilter","availabilityFilter","latencyFilter","uncensoredFilter","pageSize"];
   filters.forEach(id => $("#"+id).addEventListener(id === "searchInput" ? "input" : "change",()=>{page=1;renderAll()}));
   $("#costFilter").addEventListener("input",()=>{page=1;renderCostFilter();renderAll()});
+  $("#quickUncensored").addEventListener("click",()=>{ $("#uncensoredFilter").checked=true; $("#searchInput").value=""; page=1; renderAll(); });
   $("#promptInput").addEventListener("input",renderCostFilter);
   $("#clearFilters").addEventListener("click",()=>{filters.filter(id=>id!=="pageSize").forEach(id=>{const element=$("#"+id);if(element.type==="checkbox")element.checked=false;else element.value="all";});$("#contextFilter").value="0";$("#outputFilter").value="0";$("#costFilter").value=100;page=1;renderCostFilter();renderAll();});
   $("#refreshButton").addEventListener("click",()=>{stamp();renderAll();}); $("#themeButton").addEventListener("click",()=>document.body.classList.toggle("high-contrast")); $("#loadModels").addEventListener("click",loadModels); $("#runPrompt").addEventListener("click",runPrompt); $("#explainButton").addEventListener("click",()=>$("#methodDialog").showModal()); $(".dialog-close").addEventListener("click",()=>$("#methodDialog").close());
